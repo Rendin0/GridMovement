@@ -11,6 +11,8 @@ public class MapManager : MonoBehaviour
     [SerializeField] private Tile tileOverlayPrefab;
     [SerializeField] private GameObject tileOverlayContainer;
 
+    public Tile[,] map;
+
     void Awake()
     {
         if (_instance != null && _instance != this)
@@ -28,10 +30,10 @@ public class MapManager : MonoBehaviour
         var tilemaps = GetComponentsInChildren<Tilemap>();
 
         // Первый ребёнок должен быть тайлмапом земли, по которой будет двигаться игрок
-        Tile[,] tiles = GenerateTiles(tilemaps[0]);
+        map = GenerateTiles(tilemaps[0]);
         if (tilemaps.Length > 1)
         {
-            MakeUnreachable(tilemaps[1], tiles);
+            MakeUnreachable(tilemaps[1], map);
         }
 
 
@@ -57,7 +59,9 @@ public class MapManager : MonoBehaviour
 
                     // Вперёд на 1 по Z координате
                     tileOverlay.transform.position = cellWorldPos - Vector3.forward;
-                    Debug.Log("Arr size: [" + tiles.GetLength(0) + ", " + tiles.GetLength(1) + "]; x y = " + x + ", " + y);
+
+                    // Координаты тайла, где левая нижняя имеет координаты 0, 0
+                    tileOverlay.gridLocation = tilePos - new Vector3Int(bounds.min.x, bounds.min.y);
                     tiles[x - bounds.min.x ,y - bounds.min.y] = tileOverlay;
                 }
             }

@@ -7,10 +7,18 @@ public class MouseContorller : MonoBehaviour
 
     private GameObject selectedTile;
 
+    private Character player;
+
+    private PathFinder finder;
+
+    private List<Tile> path;
+
     // Start is called before the first frame update
     void Start()
     {
-        
+        player = FindAnyObjectByType<Character>();
+        finder = new();
+        path = new();
     }
 
     // Update is called once per frame
@@ -36,6 +44,29 @@ public class MouseContorller : MonoBehaviour
                 // Делаем объект видимым
                 focusedSprite.color = focusedSprite.color + Color.black;
                 selectedTile = focusedSprite.gameObject;
+
+                if (player.standingOn == null)
+                    player.FindStandingOn();
+
+                path = finder.FindPath(player.standingOn, focusedTile.collider.GetComponent<Tile>());
+            }
+        }
+    }
+
+    private void Update()
+    {
+
+
+        if (path.Count > 0)
+        {
+            float z = path[0].transform.position.z;
+            player.transform.position = Vector2.MoveTowards(player.transform.position, path[0].transform.position, player.speed * Time.deltaTime);
+            player.transform.position = new Vector3(player.transform.position.x, player.transform.position.y, z);
+            player.standingOn = path[0];
+
+            if (Vector2.Distance(player.transform.position, path[0].transform.position) <= 0.01f)
+            {
+                path.RemoveAt(0);
             }
         }
     }
