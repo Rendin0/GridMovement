@@ -83,7 +83,6 @@ public class MouseContorller : MonoBehaviour
 
                 path = pathFinder.FindPath(player.standingOn, focusedTile.collider.GetComponent<Tile>(), maxPathLength);
                 DrawPath(path);
-                DrawMaxLengthRadius(player.standingOn, maxPathLength);
             }
         }
     }
@@ -103,8 +102,11 @@ public class MouseContorller : MonoBehaviour
                 characterSave.position = path[0].transform.position;
                 path.RemoveAt(0);
                 DrawPath(path);
-                DrawMaxLengthRadius(player.standingOn, maxPathLength);
             }
+        }
+        else
+        {
+            DrawMaxLengthRadius(player.standingOn, maxPathLength);
         }
     }
     public RaycastHit2D GetFocusedTile()
