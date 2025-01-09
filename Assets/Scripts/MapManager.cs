@@ -8,8 +8,8 @@ public class MapManager : MonoBehaviour
     private static MapManager _instance;
     public static MapManager Instance { get { return _instance; } }
 
-    [SerializeField] private Tile tileOverlayPrefab;
-    [SerializeField] private GameObject tileOverlayContainer;
+    public Tile tileOverlayPrefab;
+    public GameObject tileOverlayContainer;
 
     public Tile[,] map;
 

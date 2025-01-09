@@ -2,10 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[CreateAssetMenu(menuName = "Save/Mouse")]
+
+public class MouseControllerSave : ScriptableObject
+{
+    public Vector3Int selectedPosition;
+}
+
 public class MouseContorller : MonoBehaviour
 {
 
-    private GameObject selectedTile;
+    private Tile selectedTile;
 
     private Character player;
 
@@ -13,15 +20,23 @@ public class MouseContorller : MonoBehaviour
 
     private List<Tile> path;
 
+    public CharacterSave characterSave;
+    public MouseControllerSave mouseSave;
+
     // Start is called before the first frame update
     void Start()
     {
         player = FindAnyObjectByType<Character>();
+        player.transform.position = characterSave.position;
+        player.FindStandingOn();
         finder = new();
         path = new();
+
+        selectedTile = MapManager.Instance.map[mouseSave.selectedPosition.x, mouseSave.selectedPosition.y];
+        selectedTile.GetComponent<SpriteRenderer>().color = Color.white;
+        path = finder.FindPath(player.standingOn, selectedTile);
     }
 
-    // Update is called once per frame
     void LateUpdate()
     {
         var focusedTile = GetFocusedTile();
@@ -43,20 +58,17 @@ public class MouseContorller : MonoBehaviour
 
                 // Делаем объект видимым
                 focusedSprite.color = focusedSprite.color + Color.black;
-                selectedTile = focusedSprite.gameObject;
-
-                if (player.standingOn == null)
-                    player.FindStandingOn();
+                selectedTile = focusedSprite.GetComponent<Tile>();
+                mouseSave.selectedPosition = selectedTile.gridLocation;
 
                 path = finder.FindPath(player.standingOn, focusedTile.collider.GetComponent<Tile>());
             }
         }
     }
 
+    // Update is called once per frame
     private void Update()
     {
-
-
         if (path.Count > 0)
         {
             float z = path[0].transform.position.z;
@@ -66,15 +78,17 @@ public class MouseContorller : MonoBehaviour
 
             if (Vector2.Distance(player.transform.position, path[0].transform.position) <= 0.01f)
             {
+                characterSave.position = path[0].transform.position;
                 path.RemoveAt(0);
             }
         }
     }
-
     public RaycastHit2D GetFocusedTile()
     {
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
         return Physics2D.Raycast(mousePos, Vector2.zero);
     }
+
+
 }
