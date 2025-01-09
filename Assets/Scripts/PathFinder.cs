@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class PathFinder
 {
-    public List<Tile> FindPath(Tile start, Tile end)
+    public List<Tile> FindPath(Tile start, Tile end, int maxLength)
     {
         List<Tile> openList = new List<Tile>();
         List<Tile> closedList = new List<Tile>();
@@ -22,10 +22,10 @@ public class PathFinder
 
             if (currentTile == end)
             {
-                return GetFinishedList(start, end);
+                return GetFinishedList(start, end, maxLength);
             }
 
-            var neighbourTiles = GetNeighbourTiles(currentTile);
+            var neighbourTiles = MapManager.Instance.GetNeighbourTiles(currentTile);
             
             foreach(var neighbourTile in neighbourTiles)
             {
@@ -48,7 +48,7 @@ public class PathFinder
         return new List<Tile>();
     }
 
-    private List<Tile> GetFinishedList(Tile start, Tile end)
+    private List<Tile> GetFinishedList(Tile start, Tile end, int maxLength)
     {
         var finishedList = new List<Tile>();
         Tile currentTile = end;
@@ -60,6 +60,11 @@ public class PathFinder
         }
         finishedList.Reverse();
 
+        if (finishedList.Count >= maxLength)
+        {
+            finishedList.RemoveRange(maxLength, finishedList.Count - maxLength);
+        }
+
         return finishedList;
 
     }
@@ -69,33 +74,5 @@ public class PathFinder
         return Mathf.Abs(start.gridLocation.x - neighbourTile.gridLocation.x) + Mathf.Abs(start.gridLocation.y - neighbourTile.gridLocation.y);
     }
 
-    private List<Tile> GetNeighbourTiles(Tile currentTile)
-    {
-        var map = MapManager.Instance.map;
-
-        var neghbourTiles = new List<Tile>();
-
-        // Сверху
-        Vector2Int pos = new Vector2Int(currentTile.gridLocation.x, currentTile.gridLocation.y + 1);
-        if (pos.y < map.GetLength(1) && map[pos.x, pos.y] != null && map[pos.x, pos.y].isReachable)
-            neghbourTiles.Add(map[pos.x, pos.y]);
-
-        // Справа
-        pos = new Vector2Int(currentTile.gridLocation.x + 1, currentTile.gridLocation.y);
-        if (pos.x < map.GetLength(0) && map[pos.x, pos.y] != null && map[pos.x, pos.y].isReachable)
-            neghbourTiles.Add(map[pos.x, pos.y]);
-
-        // Снизу
-        pos = new Vector2Int(currentTile.gridLocation.x, currentTile.gridLocation.y - 1);
-        if (pos.y >= 0 && map[pos.x, pos.y] != null && map[pos.x, pos.y].isReachable)
-            neghbourTiles.Add(map[pos.x, pos.y]);
-
-        // Слева
-        pos = new Vector2Int(currentTile.gridLocation.x - 1, currentTile.gridLocation.y);
-        if (pos.x >= 0 && map[pos.x, pos.y] != null && map[pos.x, pos.y].isReachable)
-            neghbourTiles.Add(map[pos.x, pos.y]);
-
-        return neghbourTiles;
-    }
 
 }

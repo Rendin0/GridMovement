@@ -16,12 +16,24 @@ public class MouseContorller : MonoBehaviour
 
     private Character player;
 
-    private PathFinder finder;
+    private PathFinder pathFinder;
+    private RangeFinder rangeFinder;
+
 
     private List<Tile> path;
+    private List<GameObject> pathObjects;
+    private List<GameObject> radiusObjects;
 
     public CharacterSave characterSave;
     public MouseControllerSave mouseSave;
+
+    public GameObject pathPrefab;
+    public GameObject pathContainer;
+
+    public GameObject maxLengthRadiusPrefab;
+    public GameObject maxLengthRadiusContainer;
+
+    public int maxPathLength;
 
     // Start is called before the first frame update
     void Start()
@@ -29,12 +41,19 @@ public class MouseContorller : MonoBehaviour
         player = FindAnyObjectByType<Character>();
         player.transform.position = characterSave.position;
         player.FindStandingOn();
-        finder = new();
+
+        pathFinder = new();
         path = new();
+        pathObjects = new();
+
+        rangeFinder = new();
+        radiusObjects = new();
+
 
         selectedTile = MapManager.Instance.map[mouseSave.selectedPosition.x, mouseSave.selectedPosition.y];
         selectedTile.GetComponent<SpriteRenderer>().color = Color.white;
-        path = finder.FindPath(player.standingOn, selectedTile);
+        path = pathFinder.FindPath(player.standingOn, selectedTile, maxPathLength);
+        DrawMaxLengthRadius(player.standingOn, maxPathLength);
     }
 
     void LateUpdate()
@@ -45,6 +64,7 @@ public class MouseContorller : MonoBehaviour
         {
             transform.position = focusedTile.transform.position;
 
+            // Выделение клетки и построение пути по нажатию
             if (Input.GetMouseButtonDown(0))
             {
                 if (selectedTile != null)
@@ -61,7 +81,9 @@ public class MouseContorller : MonoBehaviour
                 selectedTile = focusedSprite.GetComponent<Tile>();
                 mouseSave.selectedPosition = selectedTile.gridLocation;
 
-                path = finder.FindPath(player.standingOn, focusedTile.collider.GetComponent<Tile>());
+                path = pathFinder.FindPath(player.standingOn, focusedTile.collider.GetComponent<Tile>(), maxPathLength);
+                DrawPath(path);
+                DrawMaxLengthRadius(player.standingOn, maxPathLength);
             }
         }
     }
@@ -80,6 +102,8 @@ public class MouseContorller : MonoBehaviour
             {
                 characterSave.position = path[0].transform.position;
                 path.RemoveAt(0);
+                DrawPath(path);
+                DrawMaxLengthRadius(player.standingOn, maxPathLength);
             }
         }
     }
@@ -90,5 +114,41 @@ public class MouseContorller : MonoBehaviour
         return Physics2D.Raycast(mousePos, Vector2.zero);
     }
 
+    private void DrawPath(List<Tile> Path)
+    {
+        foreach (var point in pathObjects)
+        {
+            Destroy(point);
+        }
+        pathObjects.Clear();
+
+
+        foreach (var point in Path)
+        {
+            var currentPoint = Instantiate(pathPrefab, pathContainer.transform);
+            pathObjects.Add(currentPoint);
+            currentPoint.transform.position = point.transform.position;
+        }
+
+
+    }
+
+    private void DrawMaxLengthRadius(Tile center, int radius)
+    {
+        List<Tile> tileRadius = rangeFinder.GetRadius(center, radius);
+
+        foreach (var tile in radiusObjects)
+        {
+            Destroy(tile);
+        }
+        radiusObjects.Clear();
+
+        foreach (var tile in tileRadius)
+        {
+            var tileObject = Instantiate(maxLengthRadiusPrefab, maxLengthRadiusContainer.transform);
+            tileObject.transform.position = tile.transform.position;
+            radiusObjects.Add(tileObject);
+        }
+    }
 
 }

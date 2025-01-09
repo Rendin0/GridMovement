@@ -70,6 +70,35 @@ public class MapManager : MonoBehaviour
         return tiles;
     }
 
+    public List<Tile> GetNeighbourTiles(Tile currentTile)
+    {
+        var map = Instance.map;
+
+        var neghbourTiles = new List<Tile>();
+
+        // Сверху
+        Vector2Int pos = new Vector2Int(currentTile.gridLocation.x, currentTile.gridLocation.y + 1);
+        if (pos.y < map.GetLength(1) && map[pos.x, pos.y] != null && map[pos.x, pos.y].isReachable)
+            neghbourTiles.Add(map[pos.x, pos.y]);
+
+        // Справа
+        pos = new Vector2Int(currentTile.gridLocation.x + 1, currentTile.gridLocation.y);
+        if (pos.x < map.GetLength(0) && map[pos.x, pos.y] != null && map[pos.x, pos.y].isReachable)
+            neghbourTiles.Add(map[pos.x, pos.y]);
+
+        // Снизу
+        pos = new Vector2Int(currentTile.gridLocation.x, currentTile.gridLocation.y - 1);
+        if (pos.y >= 0 && map[pos.x, pos.y] != null && map[pos.x, pos.y].isReachable)
+            neghbourTiles.Add(map[pos.x, pos.y]);
+
+        // Слева
+        pos = new Vector2Int(currentTile.gridLocation.x - 1, currentTile.gridLocation.y);
+        if (pos.x >= 0 && map[pos.x, pos.y] != null && map[pos.x, pos.y].isReachable)
+            neghbourTiles.Add(map[pos.x, pos.y]);
+
+        return neghbourTiles;
+    }
+
     private void MakeUnreachable(Tilemap obstacles, Tile[,] tiles)
     {
         BoundsInt bounds = obstacles.cellBounds;
